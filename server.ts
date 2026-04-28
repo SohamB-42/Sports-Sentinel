@@ -206,9 +206,9 @@ async function startServer() {
       try {
         result = await callGemini({
           ...aiParams,
+          tools: [{ googleSearch: {} }],
           config: {
-            responseMimeType: "application/json",
-            tools: [{ googleSearch: {} }]
+            responseMimeType: "application/json"
           }
         });
       } catch (err: any) {
@@ -247,6 +247,13 @@ async function startServer() {
         } else {
           return res.json({ findings: [] });
         }
+      }
+
+      const isVercel = process.env.VERCEL || process.env.NEXT_PUBLIC_VERCEL_ENV;
+      
+      if (isVercel) {
+        // Skip link validation on Vercel to avoid 10s Serverless timeout
+        return res.json({ findings });
       }
 
       // Filter out hallucinatory or dead links
