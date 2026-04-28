@@ -23,7 +23,7 @@ function getAiClient(): GoogleGenAI {
   return aiClient;
 }
 
-async function callGemini(params: any, primaryModel: string = "gemini-2.5-flash"): Promise<any> {
+async function callGemini(params: any, primaryModel: string = "gemini-1.5-flash"): Promise<any> {
   try {
     const ai = getAiClient();
     return await ai.models.generateContent({
@@ -41,7 +41,7 @@ async function callGemini(params: any, primaryModel: string = "gemini-2.5-flash"
     
     // If it's a quota or 404, try the next best model
     if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('404')) {
-      const fallbackModel = primaryModel === "gemini-2.5-flash" ? "gemini-1.5-flash" : "gemini-2.5-flash";
+      const fallbackModel = primaryModel === "gemini-1.5-flash" ? "gemini-1.5-pro" : "gemini-1.5-flash";
       console.log(`Switching to fallback model: ${fallbackModel}`);
       
       try {
@@ -205,13 +205,12 @@ async function startServer() {
         result = await callGemini({
           ...aiParams,
           config: {
-            responseMimeType: "application/json",
             tools: [{ googleSearch: {} }]
           }
         });
       } catch (err: any) {
         if (err.message && err.message.includes('MISSING_API_KEY')) throw err;
-        console.warn("Search grounding failed or not supported, falling back to simulated search:", err);
+        console.warn("Search grounding failed or not supported, falling back to non-grounded search:", err);
         result = await callGemini({
           ...aiParams,
           config: {
