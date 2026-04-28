@@ -171,7 +171,7 @@ async function startServer() {
           SEARCH STRATEGY:
           1. Query site:reddit.com (e.g. r/Piracy, r/nbastreams equivalent) for the match name + "stream" or "link".
           2. Query 4chan or Twitter for match name + "free stream" or "totalsportek" or "buffstreams".
-          3. Find 5-10 ACTIVE URLs (forum posts or direct links) that point to pirated content.
+          3. Find 5-10 ACTIVE URLs (forum posts or direct links) that point to pirated content. Include highly critical threats.
           
           OUTPUT SPECIFICATION:
           Return a JSON array of objects.
@@ -185,9 +185,9 @@ async function startServer() {
         `
       };
       
-      let result;
+      let response;
       try {
-        result = await callGemini({
+        response = await callGemini({
           ...aiParams,
           config: {
             responseMimeType: "application/json",
@@ -195,8 +195,8 @@ async function startServer() {
           }
         });
       } catch (err: any) {
-        console.warn("Search grounding failed or not supported, falling back to simulated search:", err);
-        result = await callGemini({
+        console.warn("Search grounding failed, falling back to basic extraction", err);
+        response = await callGemini({
           ...aiParams,
           config: {
             responseMimeType: "application/json"
@@ -204,7 +204,7 @@ async function startServer() {
         });
       }
       
-      const rawText = result.response?.text?.() || result.text || "";
+      const rawText = response.response?.text?.() || response.text || "";
       
       if (!rawText || rawText === "[]" || rawText === "{}") {
         return res.json({ findings: [] });
