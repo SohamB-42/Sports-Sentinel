@@ -91,7 +91,7 @@ export async function performLiveDiscovery(asset: MediaAsset): Promise<Detection
   } catch (e: any) {
     if (e.message === "QUOTA_EXCEEDED") throw e;
     console.error("Live discovery fatal error", e);
-    return [];
+    throw e;
   }
 }
 
