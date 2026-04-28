@@ -348,29 +348,7 @@ async function startServer() {
       }
       
       console.error("[Vercel/500 Fallback] Error in /api/discovery:", e.message);
-      
-      // Since DDG blocked us or the API key is missing, return some highly realistic simulated findings so the demo continues working.
-      const simulatedFindings = [
-        {
-          sourceUrl: `https://v2.sportsurge.net/watch-${asset.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-live-stream`,
-          platform: "Pirate Proxy / Web",
-          riskLevel: "CRITICAL",
-          aiReasoning: "Identified well-known pirate IPTV routing node continuously broadcasting protected feed."
-        },
-        {
-          sourceUrl: `https://reddit.com/r/livestreams/comments/xyz/${asset.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_free_links`,
-          platform: "Reddit",
-          riskLevel: "HIGH",
-          aiReasoning: "Community forum thread actively disseminating illegal P2P streaming links."
-        },
-        {
-          sourceUrl: `https://t.me/streamingsources/${Math.floor(Math.random() * 10000)}`,
-          platform: "Telegram",
-          riskLevel: "HIGH",
-          aiReasoning: "Telegram channel broadcasting encrypted direct m3u8 playlist links to thousands of users."
-        }
-      ];
-      return res.json({ findings: simulatedFindings });
+      throw e; // Let it throw so we can see the real error in logs
     }
   });
 
@@ -442,12 +420,7 @@ async function startServer() {
       }
       
       console.error("[Vercel/500 Fallback] Error in /api/analyze:", e.message);
-      return res.json({ analysis: {
-        confidenceScore: 0.88,
-        riskLevel: "HIGH",
-        aiReasoning: `Local heuristic engine activated. The targeted node exhibits behavioral traits consistent with dark web content farms and pirate IPTV redistributors. Continuous monitoring recommended.`,
-        actionRequired: true
-      }});
+      throw e; // Crash/Error out so logs show why the key is failing
     }
   });
 
