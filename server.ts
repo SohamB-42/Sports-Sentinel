@@ -16,7 +16,7 @@ function getAiClient(): GoogleGenAI {
   if (!aiClient) {
     const key = process.env.GEMINI_API_KEY;
     if (!key || key.includes("YOUR_API_KEY_HERE") || key.includes("MY_GEMINI_API_KEY") || key.includes("<") || key.length < 10) {
-      throw new Error('MISSING_API_KEY');
+      throw new Error(`MISSING_API_KEY (Length: ${key ? key.length : 'undefined'}, Prefix: ${key ? key.substring(0,3) : 'none'})`);
     }
     aiClient = new GoogleGenAI({ apiKey: key });
   }
@@ -33,8 +33,8 @@ async function callGemini(params: any, primaryModel: string = "gemini-2.5-flash"
   } catch (err: any) {
     const msg = err?.message || String(err);
     
-    if (msg === 'MISSING_API_KEY' || msg.includes('API key not valid') || msg.includes('API_KEY_INVALID')) {
-      throw new Error('MISSING_API_KEY');
+    if (msg.includes('MISSING_API_KEY') || msg.includes('API key not valid') || msg.includes('API_KEY_INVALID')) {
+      throw new Error(msg.includes('MISSING_API_KEY') ? err.message : 'MISSING_API_KEY');
     }
     
     console.warn(`Primary model ${primaryModel} failed:`, msg);
@@ -210,7 +210,7 @@ async function startServer() {
           }
         });
       } catch (err: any) {
-        if (err.message === 'MISSING_API_KEY') throw err;
+        if (err.message && err.message.includes('MISSING_API_KEY')) throw err;
         console.warn("Search grounding failed or not supported, falling back to simulated search:", err);
         result = await callGemini({
           ...aiParams,
