@@ -13,7 +13,7 @@ let aiClient: GoogleGenAI | null = null;
 function getAiClient(): GoogleGenAI {
   if (!aiClient) {
     const key = process.env.GEMINI_API_KEY;
-    if (!key || key.includes("YOUR_API_KEY_HERE") || key.includes("<") || key.length < 10) {
+    if (!key || key.includes("YOUR_API_KEY_HERE") || key.includes("MY_GEMINI_API_KEY") || key.includes("<") || key.length < 10) {
       throw new Error('A valid GEMINI_API_KEY environment variable is required. If running in a deployed environment, please configure this in your hosting settings.');
     }
     aiClient = new GoogleGenAI({ apiKey: key });
@@ -171,7 +171,7 @@ async function startServer() {
           SEARCH STRATEGY:
           1. Query site:reddit.com (e.g. r/Piracy, r/nbastreams equivalent) for the match name + "stream" or "link".
           2. Query 4chan or Twitter for match name + "free stream" or "totalsportek" or "buffstreams".
-          3. Find 5-10 ACTIVE URLs (forum posts or direct links) that point to pirated content. Include highly critical threats.
+          3. Find 5-10 ACTIVE URLs (forum posts or direct links) that point to pirated content.
           
           OUTPUT SPECIFICATION:
           Return a JSON array of objects.
@@ -185,9 +185,9 @@ async function startServer() {
         `
       };
       
-      let response;
+      let result;
       try {
-        response = await callGemini({
+        result = await callGemini({
           ...aiParams,
           config: {
             responseMimeType: "application/json",
@@ -195,8 +195,8 @@ async function startServer() {
           }
         });
       } catch (err: any) {
-        console.warn("Search grounding failed, falling back to basic extraction", err);
-        response = await callGemini({
+        console.warn("Search grounding failed or not supported, falling back to simulated search:", err);
+        result = await callGemini({
           ...aiParams,
           config: {
             responseMimeType: "application/json"
@@ -204,7 +204,7 @@ async function startServer() {
         });
       }
       
-      const rawText = response.response?.text?.() || response.text || "";
+      const rawText = result.response?.text?.() || result.text || "";
       
       if (!rawText || rawText === "[]" || rawText === "{}") {
         return res.json({ findings: [] });
