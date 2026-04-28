@@ -179,8 +179,10 @@ async function startServer() {
           Use Google Search to find REAL discussions on forums (Reddit, 4chan), social media (Twitter), and Telegram directories where users are actively sharing illegal streaming links, torrents, or IPTV proxies for this specific match.
           
           CRITICAL INSTRUCTION:
-          DO NOT HALLUCINATE OR INVENT URLS. EVERY URL MUST BE A REAL, VALID LINK you found in your search results.
-          If no real, active links are found, return an empty array [].
+          ONLY SHOW MALICIOUS IP THEFT LINKS. 
+          Do NOT include news articles, legal broadcasts, score updates, or generic sports discussions.
+          Every URL MUST BE A REAL, VALID LINK pointing to pirated content (illegal streams, torrents, or IPTV proxies).
+          DO NOT HALLUCINATE OR INVENT URLS. If no real, active illegal links are found, return an empty array [].
           Do NOT output placeholder URLs like example.com or reddit.com/r/example.
           
           SEARCH STRATEGY:
@@ -271,7 +273,7 @@ async function startServer() {
           }
           
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 2500); // Wait max 2.5s per link
+          const timeoutId = setTimeout(() => controller.abort(), 1200); // Fast timeout to avoid Vercel 504s
           
           const checkRes = await fetch(url, {
             method: 'HEAD', // light request
