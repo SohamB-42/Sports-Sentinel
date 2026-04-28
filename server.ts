@@ -286,6 +286,42 @@ async function startServer() {
             platform: "Twitter",
             riskLevel: "CRITICAL",
             aiReasoning: "Live video broadcast link shared openly on social media."
+          },
+          {
+            sourceUrl: "https://t.me/sports_streams_xyz/1042",
+            platform: "Telegram",
+            riskLevel: "CRITICAL",
+            aiReasoning: "Telegram channel actively broadcasting pirated feed to 15k+ subscribers."
+          },
+          {
+            sourceUrl: "https://boards.4chan.org/sp/thread/mock_sp_thread",
+            platform: "4chan",
+            riskLevel: "MEDIUM",
+            aiReasoning: "Anonymous forum users discussing bypass methods for the streaming platform."
+          },
+          {
+            sourceUrl: "https://totalsportek.pro/mock-live-stream/",
+            platform: "Pirate Proxy",
+            riskLevel: "CRITICAL",
+            aiReasoning: "Known piracy aggregation site listing 5+ live streaming links."
+          },
+          {
+            sourceUrl: "https://x.com/sports_pirate23/status/mock",
+            platform: "X/Twitter",
+            riskLevel: "HIGH",
+            aiReasoning: "Viral tweet containing a direct m3u8 playlist link for the game."
+          },
+          {
+            sourceUrl: "https://reddit.com/r/FREEMEDIAHECKYEAH/comments/mock",
+            platform: "Reddit",
+            riskLevel: "MEDIUM",
+            aiReasoning: "General piracy subreddit sharing generic methods to access this broadcaster's content."
+          },
+          {
+            sourceUrl: "https://buffstreams.sx/mock-event-stream",
+            platform: "Pirate Proxy",
+            riskLevel: "CRITICAL",
+            aiReasoning: "Direct high-bandwidth pirate streaming portal mirroring the official feed."
           }
         ]});
       }
