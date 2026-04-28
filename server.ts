@@ -249,6 +249,8 @@ async function startServer() {
 
       // Filter out hallucinatory or dead links
       const liveFindings = [];
+      const legitDomains = ['duckduckgo.com', 'youtube.com', 'disneyplus.com', 'espn.com', 'cbssports.com', 'foxsports.com', 'bbc', 'skysports.com', 'marca.com', 'as.com', 'google.com', 'yahoo.com', 'bing.com', 'sportingnews.com', 'goal.com', 'bleacherreport.com', 'wikipedia.org', 'reuters.com', 'apnews.com', 'nytimes.com', 'theathletic.com', 'nbcsports.com', 'televisa.com', 'tudn.com', 'directv.com', 'fubo.tv', 'hulu.com', 'paramountplus.com', 'peacocktv.com'];
+
       await Promise.all(findings.map(async (f: any) => {
         if (!f.sourceUrl || typeof f.sourceUrl !== 'string') return;
         try {
@@ -257,6 +259,16 @@ async function startServer() {
           
           let url = f.sourceUrl.startsWith('http') ? f.sourceUrl : "https://" + f.sourceUrl;
           f.sourceUrl = url;
+          
+          // Check if it's a legit domain
+          try {
+            const hostname = new URL(url).hostname.toLowerCase();
+            if (legitDomains.some(domain => hostname.includes(domain))) {
+              return;
+            }
+          } catch {
+            return;
+          }
           
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 2500); // Wait max 2.5s per link
@@ -289,8 +301,17 @@ async function startServer() {
           const matches = html.match(/uddg=([^&]+)/g);
           
           if (matches) {
+            const legitDomains = ['duckduckgo.com', 'youtube.com', 'disneyplus.com', 'espn.com', 'cbssports.com', 'foxsports.com', 'bbc', 'skysports.com', 'marca.com', 'as.com', 'google.com', 'yahoo.com', 'bing.com', 'sportingnews.com', 'goal.com', 'bleacherreport.com', 'wikipedia.org', 'reuters.com', 'apnews.com', 'nytimes.com', 'theathletic.com', 'nbcsports.com', 'televisa.com', 'tudn.com', 'directv.com', 'fubo.tv', 'hulu.com', 'paramountplus.com', 'peacocktv.com'];
+            
             const urls = [...new Set(matches.map(u => decodeURIComponent(u.replace('uddg=', ''))))]
-              .filter(u => !u.includes('duckduckgo.com') && !u.includes('youtube.com/watch') && !u.includes('disneyplus.com') && !u.includes('espn.com'))
+              .filter(u => {
+                try {
+                  const hostname = new URL(u).hostname.toLowerCase();
+                  return !legitDomains.some(domain => hostname.includes(domain));
+                } catch {
+                  return false;
+                }
+              })
               .slice(0, 5);
               
             const liveFindings = urls.map(url => {
