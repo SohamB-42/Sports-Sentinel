@@ -163,6 +163,11 @@ async function startServer() {
           TASK:
           Use Google Search to find REAL discussions on forums (Reddit, 4chan), social media (Twitter), and Telegram directories where users are actively sharing illegal streaming links, torrents, or IPTV proxies for this specific match.
           
+          CRITICAL INSTRUCTION:
+          DO NOT HALLUCINATE OR INVENT URLS. EVERY URL MUST BE A REAL, VALID LINK you found in your search results.
+          If no real, active links are found, return an empty array [].
+          Do NOT output placeholder URLs like example.com or reddit.com/r/example.
+          
           SEARCH STRATEGY:
           1. Query site:reddit.com (e.g. r/Piracy, r/nbastreams equivalent) for the match name + "stream" or "link".
           2. Query 4chan or Twitter for match name + "free stream" or "totalsportek" or "buffstreams".
@@ -226,7 +231,38 @@ async function startServer() {
         }
       }
 
-      res.json({ findings });
+      // Filter out hallucinatory or dead links
+      const liveFindings = [];
+      await Promise.all(findings.map(async (f: any) => {
+        if (!f.sourceUrl || typeof f.sourceUrl !== 'string') return;
+        try {
+          // Exclude obviously forged URLs
+          if (f.sourceUrl.includes('example.com') || f.sourceUrl.includes('your-website')) return;
+          
+          let url = f.sourceUrl.startsWith('http') ? f.sourceUrl : "https://" + f.sourceUrl;
+          f.sourceUrl = url;
+          
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 2500); // Wait max 2.5s per link
+          
+          const checkRes = await fetch(url, {
+            method: 'HEAD', // light request
+            headers: { 'User-Agent': 'Mozilla/5.0' },
+            signal: controller.signal
+          }).catch(() => null);
+          
+          clearTimeout(timeoutId);
+          
+          // Even if we get 403 or 401, the server exists, so it's not a hallucinated domain
+          if (checkRes && checkRes.status !== 404) {
+            liveFindings.push(f);
+          }
+        } catch (e) {
+          // Skip
+        }
+      }));
+
+      res.json({ findings: liveFindings });
     } catch (e: any) {
       if (e.message === "QUOTA_EXCEEDED") return res.status(429).json({ error: "QUOTA_EXCEEDED" });
       res.status(500).json({ error: e.message });
