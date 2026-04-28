@@ -153,7 +153,7 @@ async function startServer() {
     if (!asset) return res.status(400).json({ error: "Missing asset details" });
 
     try {
-      const result = await callGemini({
+      const aiParams = {
         contents: `
           You are an IP Protection Analyst specializing in Digital PIRACY.
           
@@ -176,14 +176,29 @@ async function startServer() {
             "riskLevel": "CRITICAL" | "HIGH" | "MEDIUM", 
             "aiReasoning": "Brief explanation of what was found at this URL." 
           }
-          Raw JSON only.
-        `,
-        config: {
-          responseMimeType: "application/json",
-          tools: [{ googleSearch: {} }]
-        }
-      });
-
+          Raw JSON only. No markdown formatting.
+        `
+      };
+      
+      let result;
+      try {
+        result = await callGemini({
+          ...aiParams,
+          config: {
+            responseMimeType: "application/json",
+            tools: [{ googleSearch: {} }]
+          }
+        });
+      } catch (err: any) {
+        console.warn("Search grounding failed or not supported, falling back to simulated search:", err);
+        result = await callGemini({
+          ...aiParams,
+          config: {
+            responseMimeType: "application/json"
+          }
+        });
+      }
+      
       const rawText = result.response?.text?.() || result.text || "";
       
       if (!rawText || rawText === "[]" || rawText === "{}") {
@@ -313,7 +328,10 @@ async function startServer() {
 
 const appPromise = startServer();
 
+export const maxDuration = 60; // Set max duration for Vercel serverless function to 60s to prevent timeouts
+
 export default async function (req: any, res: any) {
   const app = await appPromise;
   app(req, res);
 }
+

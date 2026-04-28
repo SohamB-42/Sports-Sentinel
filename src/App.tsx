@@ -160,6 +160,7 @@ export default function App() {
             return { asset, findings };
           } catch (err: any) {
             if (err.message === "QUOTA_EXCEEDED") throw err;
+            updateLog(`[ERROR] Discovery failed for ${asset.name.split(':')[0]}: ${err.message}`);
             return { asset, findings: [] };
           }
         })

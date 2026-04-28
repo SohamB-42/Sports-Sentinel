@@ -61,7 +61,7 @@ export async function performLiveDiscovery(asset: MediaAsset): Promise<Detection
     
     if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || "Backend discovery failed");
+        throw new Error(errData.error || `Backend discovery failed with status ${res.status}`);
     }
 
     const { findings } = await res.json();
